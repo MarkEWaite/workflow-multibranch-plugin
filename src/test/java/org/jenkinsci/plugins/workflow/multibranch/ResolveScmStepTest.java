@@ -26,6 +26,7 @@
 package org.jenkinsci.plugins.workflow.multibranch;
 
 import hudson.model.TopLevelItem;
+import java.util.Collections;
 import jenkins.scm.impl.mock.MockSCMController;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -33,6 +34,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.fail;
 
 public class ResolveScmStepTest {
 
@@ -121,4 +126,16 @@ public class ResolveScmStepTest {
             j.buildAndAssertSuccess(job);
         }
     }
+
+    @Test
+    public void constructorRejectsNullTargetsWithClearMessage() {
+        try {
+            new ResolveScmStep(null, null);
+            fail("expected NullPointerException");
+        } catch (NullPointerException e) {
+            assertThat(e.getMessage(), containsString("targets is required"));
+        }
+        new ResolveScmStep(null, Collections.emptyList());
+    }
+
 }
