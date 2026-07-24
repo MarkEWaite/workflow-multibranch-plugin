@@ -25,10 +25,12 @@
 
 package org.jenkinsci.plugins.workflow.multibranch;
 
+import hudson.model.Result;
 import hudson.model.TopLevelItem;
 import jenkins.scm.impl.mock.MockSCMController;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -121,4 +123,20 @@ public class ResolveScmStepTest {
             j.buildAndAssertSuccess(job);
         }
     }
+
+    @Test
+    public void given_targetsOmitted_when_invoked_then_failsWithClearMessage() throws Exception {
+        try (MockSCMController c = MockSCMController.create()) {
+            c.createRepository("repo");
+            WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "workflow");
+            job.setDefinition(new CpsFlowDefinition("node {\n"
+                    + "  resolveScm source: mockScm(controllerId:'"
+                    + c.getId()
+                    + "', repository:'repo', traits: [discoverBranches()])\n"
+                    + "}", true));
+            WorkflowRun b = j.assertBuildStatus(Result.FAILURE, job.scheduleBuild2(0));
+            j.assertLogContains("targets is required", b);
+        }
+    }
+
 }

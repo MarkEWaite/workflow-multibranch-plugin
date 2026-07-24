@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
@@ -90,6 +91,10 @@ public class ResolveScmStep extends Step {
     @DataBoundConstructor
     public ResolveScmStep(@NonNull SCMSource source, @NonNull List<String> targets) {
         this.source = source;
+        // JENKINS-67005: Pipeline passes null when targets is omitted from the step call.
+        Objects.requireNonNull(
+                targets,
+                "targets is required; provide candidate branch names, e.g. targets: [env.BRANCH_NAME, 'main']");
         this.targets = new ArrayList<>(targets);
     }
 
